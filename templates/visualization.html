@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - ConvoSense{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Analytics Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i data-feather="trending-up" class="me-2"></i>
+                    Advanced Analytics
+                </h2>
+                <div>
+                    <select class="form-select d-inline-block w-auto me-2" id="time-range">
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                    </select>
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshAnalytics()">
+                        <i data-feather="refresh-cw" class="me-1"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Response Time</h6>
+                            <h3 class="mb-0" id="current-response-time">0ms</h3>
+                            <small class="text-success">
+                                <i data-feather="trending-down" style="width: 14px; height: 14px;"></i>
+                                -12% from yesterday
+                            </small>
+                        </div>
+                        <div class="text-primary">
+                            <i data-feather="zap" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Throughput</h6>
+                            <h3 class="mb-0" id="throughput">0/min</h3>
+                            <small class="text-success">
+                                <i data-feather="trending-up" style="width: 14px; height: 14px;"></i>
+                                +8% from yesterday
+                            </small>
+                        </div>
+                        <div class="text-success">
+                            <i data-feather="activity" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Active Connections</h6>
+                            <h3 class="mb-0" id="active-connections">0</h3>
+                            <small class="text-info">
+                                <i data-feather="users" style="width: 14px; height: 14px;"></i>
+                                Real-time users
+                            </small>
+                        </div>
+                        <div class="text-info">
+                            <i data-feather="wifi" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Error Rate</h6>
+                            <h3 class="mb-0" id="error-rate">0%</h3>
+                            <small class="text-success">
+                                <i data-feather="shield" style="width: 14px; height: 14px;"></i>
+                                System healthy
+                            </small>
+                        </div>
+                        <div class="text-warning">
+                            <i data-feather="alert-triangle" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Performance -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="cpu" class="me-2"></i>
+                        System Resources
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6>Memory Usage</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" id="memory-progress" style="width: 0%"></div>
+                            </div>
+                            <span class="text-muted small" id="memory-usage">0%</span>
+                        </div>
+                        <div class="col-6">
+                            <h6>CPU Usage</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-info" role="progressbar" id="cpu-progress" style="width: 0%"></div>
+                            </div>
+                            <span class="text-muted small" id="cpu-usage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="clock" class="me-2"></i>
+                        Response Time Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="responseTimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Charts -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="pie-chart" class="me-2"></i>
+                        Conversation Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="target" class="me-2"></i>
+                        Confidence Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="confidenceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="bar-chart" class="me-2"></i>
+                        Accuracy by Intent
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="database" class="me-2"></i>
+                        Detailed Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Session ID</th>
+                                    <th>Intent</th>
+                                    <th>Confidence</th>
+                                    <th>Response Time</th>
+                                    <th>Satisfaction</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analytics-table">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+class AdvancedAnalytics {
+    constructor() {
+        this.charts = {};
+        this.initializeCharts();
+        this.loadAnalyticsData();
+        
+        // Setup time range selector
+        document.getElementById('time-range').addEventListener('change', (e) => {
+            this.loadAnalyticsData(e.target.value);
+        });
+        
+        // Refresh every 30 seconds
+        setInterval(() => this.loadAnalyticsData(), 30000);
+    }
+    
+    initializeCharts() {
+        // Response Time Trend Chart
+        const ctx1 = document.getElementById('responseTimeChart').getContext('2d');
+        this.charts.responseTime = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Average',
+                        data: [],
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Max',
+                        data: [],
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Response Time (ms)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Status Distribution Chart
+        const ctx2 = document.getElementById('statusChart').getContext('2d');
+        this.charts.status = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Resolved', 'In Progress', 'Pending', 'Escalated'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#28a745', '#ffc107', '#17a2b8', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Confidence Distribution Chart
+        const ctx3 = document.getElementById('confidenceChart').getContext('2d');
+        this.charts.confidence = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: ['High (>70%)', 'Medium (40-70%)', 'Low (<40%)'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Accuracy by Intent Chart
+        const ctx4 = document.getElementById('accuracyChart').getContext('2d');
+        this.charts.accuracy = new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: ['Technical', 'Billing', 'Account', 'Product', 'General'],
+                datasets: [{
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: '#17a2b8'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Accuracy (%)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    async loadAnalyticsData(timeRange = '24h') {
+        try {
+            const response = await fetch(`/api/analytics-data?range=${timeRange}`);
+            const data = await response.json();
+            
+            // Update performance metrics
+            document.getElementById('current-response-time').textContent = `${data.current_response_time}ms`;
+            document.getElementById('throughput').textContent = `${data.throughput_per_min}/min`;
+            document.getElementById('active-connections').textContent = data.active_connections;
+            document.getElementById('error-rate').textContent = `${data.error_rate}%`;
+            
+            // Update system resources
+            document.getElementById('memory-usage').textContent = `${data.memory_usage}%`;
+            document.getElementById('cpu-usage').textContent = `${data.cpu_usage}%`;
+            document.getElementById('memory-progress').style.width = `${data.memory_usage}%`;
+            document.getElementById('cpu-progress').style.width = `${data.cpu_usage}%`;
+            
+            // Update charts
+            this.updateResponseTimeChart(data.response_time_trend);
+            this.updateStatusChart(data.status_distribution);
+            this.updateConfidenceChart(data.confidence_distribution);
+            this.updateAccuracyChart(data.accuracy_by_intent);
+            
+            // Update detailed analytics table
+            this.updateAnalyticsTable(data.detailed_analytics);
+            
+        } catch (error) {
+            console.error('Error loading analytics data:', error);
+        }
+    }
+    
+    updateResponseTimeChart(data) {
+        this.charts.responseTime.data.labels = data.labels;
+        this.charts.responseTime.data.datasets[0].data = data.avg_times;
+        this.charts.responseTime.data.datasets[1].data = data.max_times;
+        this.charts.responseTime.update();
+    }
+    
+    updateStatusChart(data) {
+        this.charts.status.data.datasets[0].data = data;
+        this.charts.status.update();
+    }
+    
+    updateConfidenceChart(data) {
+        this.charts.confidence.data.datasets[0].data = data;
+        this.charts.confidence.update();
+    }
+    
+    updateAccuracyChart(data) {
+        this.charts.accuracy.data.datasets[0].data = data;
+        this.charts.accuracy.update();
+    }
+    
+    updateAnalyticsTable(data) {
+        const tbody = document.getElementById('analytics-table');
+        
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No data available</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = data.slice(0, 50).map(row => `
+            <tr>
+                <td><small>${row.timestamp}</small></td>
+                <td><code>${row.session_id.substring(0, 8)}...</code></td>
+                <td><span class="badge bg-primary">${row.intent}</span></td>
+                <td>
+                    <span class="badge ${this.getConfidenceBadgeClass(row.confidence)}">
+                        ${(row.confidence * 100).toFixed(1)}%
+                    </span>
+                </td>
+                <td>${row.response_time}ms</td>
+                <td>
+                    ${row.satisfaction ? 
+                        `<span class="badge bg-warning">${row.satisfaction}/5</span>` : 
+                        '<span class="text-muted">-</span>'
+                    }
+                </td>
+                <td>
+                    <span class="badge ${this.getStatusBadgeClass(row.status)}">${row.status.replace('_', ' ')}</span>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    getConfidenceBadgeClass(confidence) {
+        if (confidence >= 0.7) return 'bg-success';
+        if (confidence >= 0.4) return 'bg-warning';
+        return 'bg-danger';
+    }
+    
+    getStatusBadgeClass(status) {
+        switch (status) {
+            case 'resolved': return 'bg-success';
+            case 'in_progress': return 'bg-warning';
+            case 'pending': return 'bg-info';
+            case 'escalated': return 'bg-danger';
+            default: return 'bg-secondary';
+        }
+    }
+}
+
+// Global functions
+function refreshAnalytics() {
+    location.reload();
+}
+
+// Initialize analytics when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new AdvancedAnalytics();
+});
+</script>
+{% endblock %}

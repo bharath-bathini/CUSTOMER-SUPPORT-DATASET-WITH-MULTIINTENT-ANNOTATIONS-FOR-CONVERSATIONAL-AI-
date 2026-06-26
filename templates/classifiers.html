@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}ConvoSense - Classifier Metrics{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .plot-img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+        }
+        .plot-section {
+            margin-bottom: 2rem;
+        }
+        .plot-subsection {
+            margin-bottom: 1rem;
+        }
+        .plot-subsection h6 {
+            margin-top: 1rem;
+            color: #495057;
+        }
+        .no-plots {
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Classifier Metrics</h1>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Classifier: <span id="classifier-name">Loading...</span></h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Intent Plots -->
+                <div class="col-md-6 plot-section">
+                    <h5>Intent Classification</h5>
+                    <div class="plot-subsection">
+                        <h6>Confusion Matrices</h6>
+                        <div id="intent-cm">
+                            <p>Loading confusion matrices...</p>
+                        </div>
+                    </div>
+                    <div class="plot-subsection">
+                        <h6>ROC Curves</h6>
+                        <div id="intent-roc">
+                            <p>Loading ROC curves...</p>
+                        </div>
+                    </div>
+                    <div class="plot-subsection">
+                        <h6>Other Plots</h6>
+                        <div id="intent-other">
+                            <p>Loading other plots...</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category Plots -->
+                <div class="col-md-6 plot-section">
+                    <h5>Category Classification</h5>
+                    <div class="plot-subsection">
+                        <h6>Confusion Matrices</h6>
+                        <div id="category-cm">
+                            <p>Loading confusion matrices...</p>
+                        </div>
+                    </div>
+                    <div class="plot-subsection">
+                        <h6>ROC Curves</h6>
+                        <div id="category-roc">
+                            <p>Loading ROC curves...</p>
+                        </div>
+                    </div>
+                    <div class="plot-subsection">
+                        <h6>Other Plots</h6>
+                        <div id="category-other">
+                            <p>Loading other plots...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        // Get classifier from URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const classifier = urlParams.get('classifier') || 'dtc'; // Default to 'dtc'
+        const classifierNames = {
+            'dtc': 'Decision Tree Classifier (DTC)',
+            'nbc': 'Naive Bayes Classifier (NBC)',
+            'knn': 'K-Nearest Neighbors (KNN)',
+            'dnn_knn': 'Deep Neural Network + KNN (DNN-KNN)'
+        };
+
+        // Update classifier name in header
+        document.getElementById('classifier-name').textContent = classifierNames[classifier] || 'Unknown Classifier';
+
+        // Function to render plots
+        function renderPlots(containerId, plotPaths, altTextPrefix) {
+            const container = document.getElementById(containerId);
+            if (plotPaths && plotPaths.length > 0) {
+                container.innerHTML = plotPaths.map(path => 
+                    `<img src="/static/${path}" class="plot-img" alt="${altTextPrefix} - ${path.split('/').pop()}">`
+                ).join('');
+            } else {
+                container.innerHTML = '<p class="no-plots">No plots available.</p>';
+            }
+        }
+
+        // Fetch plot paths from backend
+        fetch(`/api/${classifier}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch classifier metrics');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update Intent Plots
+                renderPlots('intent-cm', data.intent.confusion_matrices, 'Intent Confusion Matrix');
+                renderPlots('intent-roc', data.intent.roc_curves, 'Intent ROC Curve');
+                renderPlots('intent-other', data.intent.other_plots, 'Intent Other Plot');
+
+                // Update Category Plots
+                renderPlots('category-cm', data.category.confusion_matrices, 'Category Confusion Matrix');
+                renderPlots('category-roc', data.category.roc_curves, 'Category ROC Curve');
+                renderPlots('category-other', data.category.other_plots, 'Category Other Plot');
+            })
+            .catch(error => {
+                console.error('Error fetching classifier metrics:', error);
+                const sections = ['intent-cm', 'intent-roc', 'intent-other', 'category-cm', 'category-roc', 'category-other'];
+                sections.forEach(section => {
+                    document.getElementById(section).innerHTML = '<p class="no-plots">Error loading plots.</p>';
+                });
+            });
+    </script>
+{% endblock %}

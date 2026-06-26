@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}ConvoSense - AI-Powered Customer Support{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Hero Section -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">
+                    <i data-feather="zap" class="text-primary"></i>
+                    ConvoSense
+                </h1>
+                <p class="lead text-muted">
+                    AI-powered customer support with real-time chat and intelligent intent detection
+                </p>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i data-feather="message-circle" class="text-primary mb-3" style="width: 3rem; height: 3rem;"></i>
+                            <h5 class="card-title">Real-time Chat</h5>
+                            <p class="card-text text-muted">
+                                Instant messaging between customers and support agents with live notifications
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i data-feather="cpu" class="text-success mb-3" style="width: 3rem; height: 3rem;"></i>
+                            <h5 class="card-title">AI Intent Detection</h5>
+                            <p class="card-text text-muted">
+                                Automatic detection of customer intents with confidence scoring and sentiment analysis
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i data-feather="users" class="text-info mb-3" style="width: 3rem; height: 3rem;"></i>
+                            <h5 class="card-title">Agent Dashboard</h5>
+                            <p class="card-text text-muted">
+                                Comprehensive view of all conversations with intent annotations and management tools
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i data-feather="trending-up" class="text-warning mb-3" style="width: 3rem; height: 3rem;"></i>
+                            <h5 class="card-title">Analytics & Insights</h5>
+                            <p class="card-text text-muted">
+                                Track conversation patterns, intent accuracy, and customer satisfaction metrics
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="d-grid">
+                        <a href="{{ url_for('customer_chat') }}" class="btn btn-primary btn-lg">
+                            <i data-feather="message-square" class="me-2"></i>
+                            Start Customer Chat
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-grid">
+                        <a href="{{ url_for('agent_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                            <i data-feather="settings" class="me-2"></i>
+                            Agent Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Details -->
+            <div class="mt-5 p-4 bg-light border rounded">
+                <h6 class="text-secondary mb-3">
+                    <i data-feather="info" class="me-2"></i>
+                    Technical Features
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled small text-muted">
+                            <li>• Flask + Socket.IO for real-time communication</li>
+                            <li>• Google Gemini 1.5 Flash for intent classification</li>
+                            <li>• Multi-intent detection with confidence scoring</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled small text-muted">
+                            <li>• PostgreSQL database for conversation storage</li>
+                            <li>• Bootstrap 5 responsive design</li>
+                            <li>• Python 3.11+ compatible</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

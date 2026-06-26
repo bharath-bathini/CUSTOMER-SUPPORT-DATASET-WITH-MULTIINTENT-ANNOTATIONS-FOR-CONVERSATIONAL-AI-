@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ConvoSense{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i data-feather="bar-chart-2" class="me-2"></i>
+                    Support Dashboard
+                </h2>
+                <div>
+                    <button class="btn btn-outline-primary btn-sm me-2" onclick="refreshDashboard()">
+                        <i data-feather="refresh-cw" class="me-1"></i>
+                        Refresh
+                    </button>
+                    <span class="text-muted small">Last updated: <span id="last-updated">--</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Active Conversations</h6>
+                            <h3 class="mb-0" id="active-conversations">0</h3>
+                        </div>
+                        <div class="text-primary">
+                            <i data-feather="message-circle" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Avg Response Time</h6>
+                            <h3 class="mb-0" id="avg-response-time">0ms</h3>
+                        </div>
+                        <div class="text-success">
+                            <i data-feather="clock" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Resolved Issues</h6>
+                            <h3 class="mb-0" id="resolved-issues">0</h3>
+                        </div>
+                        <div class="text-info">
+                            <i data-feather="check-circle" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Satisfaction Score</h6>
+                            <h3 class="mb-0" id="satisfaction-score">0%</h3>
+                        </div>
+                        <div class="text-warning">
+                            <i data-feather="star" style="width: 48px; height: 48px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Conversation Timeline -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="trending-up" class="me-2"></i>
+                        Conversation Timeline (24h)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="conversationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Intent Distribution -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="pie-chart" class="me-2"></i>
+                        Intent Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="intentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Conversations -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="list" class="me-2"></i>
+                        Recent Conversations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User ID</th>
+                                    <th>Primary Intent</th>
+                                    <th>Status</th>
+                                    <th>Duration</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-conversations">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+class Dashboard {
+    constructor() {
+        this.conversationChart = null;
+        this.intentChart = null;
+        this.initializeCharts();
+        this.loadDashboardData();
+        
+        // Refresh every 30 seconds
+        setInterval(() => this.loadDashboardData(), 30000);
+    }
+    
+    initializeCharts() {
+        // Conversation Timeline Chart
+        const ctx1 = document.getElementById('conversationChart').getContext('2d');
+        this.conversationChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Conversations',
+                    data: [],
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Intent Distribution Chart
+        const ctx2 = document.getElementById('intentChart').getContext('2d');
+        this.intentChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Technical', 'Billing', 'Account', 'Product', 'General'],
+                datasets: [{
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: [
+                        '#dc3545',
+                        '#28a745',
+                        '#17a2b8',
+                        '#ffc107',
+                        '#6c757d'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    async loadDashboardData() {
+        try {
+            const response = await fetch('/api/dashboard-data');
+            const data = await response.json();
+            
+            // Update metrics
+            document.getElementById('active-conversations').textContent = data.active_conversations;
+            document.getElementById('avg-response-time').textContent = `${data.avg_response_time}ms`;
+            document.getElementById('resolved-issues').textContent = data.resolved_issues;
+            document.getElementById('satisfaction-score').textContent = `${data.satisfaction_score}%`;
+            
+            // Update conversation timeline chart
+            this.conversationChart.data.labels = data.conversation_timeline.labels;
+            this.conversationChart.data.datasets[0].data = data.conversation_timeline.data;
+            this.conversationChart.update();
+            
+            // Update intent distribution chart
+            this.intentChart.data.datasets[0].data = data.intent_distribution;
+            this.intentChart.update();
+            
+            // Update recent conversations table
+            this.updateRecentConversations(data.recent_conversations);
+            
+            // Update timestamp
+            document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+            
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        }
+    }
+    
+    updateRecentConversations(conversations) {
+        const tbody = document.getElementById('recent-conversations');
+        
+        if (!conversations || conversations.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No recent conversations</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = conversations.map(conv => `
+            <tr>
+                <td>${conv.time}</td>
+                <td><code>${conv.user_id.substring(0, 8)}...</code></td>
+                <td>
+                    <span class="badge bg-primary">${conv.intent}</span>
+                </td>
+                <td>
+                    <span class="badge ${this.getStatusBadgeClass(conv.status)}">${conv.status.replace('_', ' ')}</span>
+                </td>
+                <td>${conv.duration}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewConversation('${conv.user_id}')">
+                        <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                        View
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+        
+        feather.replace();
+    }
+    
+    getStatusBadgeClass(status) {
+        switch (status) {
+            case 'resolved': return 'bg-success';
+            case 'in_progress': return 'bg-warning';
+            case 'pending': return 'bg-info';
+            case 'escalated': return 'bg-danger';
+            default: return 'bg-secondary';
+        }
+    }
+}
+
+// Global functions
+function refreshDashboard() {
+    location.reload();
+}
+
+function viewConversation(userId) {
+    // In a real application, this would open a detailed conversation view
+    alert(`Viewing conversation for user: ${userId}`);
+}
+
+// Initialize dashboard when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new Dashboard();
+});
+</script>
+{% endblock %}

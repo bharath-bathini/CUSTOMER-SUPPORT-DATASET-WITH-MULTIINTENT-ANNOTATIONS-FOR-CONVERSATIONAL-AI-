@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}ConvoSense - AI Customer Support System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold mb-4">
+                <i data-feather="message-circle" class="me-3"></i>
+                ConvoSense
+            </h1>
+            <p class="lead mb-4">
+                AI-powered customer support system with intelligent intent detection and real-time conversation analysis.
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="/chat" class="btn btn-primary btn-lg me-md-2">
+                    <i data-feather="message-square" class="me-2"></i>
+                    Start Chat
+                </a>
+                <a href="/dashboard" class="btn btn-outline-primary btn-lg">
+                    <i data-feather="bar-chart-2" class="me-2"></i>
+                    View Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">Key Features</h2>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i data-feather="brain" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title">AI Intent Detection</h5>
+                    <p class="card-text">
+                        Advanced multi-intent classification using Google Gemini to understand customer needs with confidence scoring.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i data-feather="zap" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title">Real-time Responses</h5>
+                    <p class="card-text">
+                        Instant AI-powered responses that adapt to conversation context and detected customer intents.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i data-feather="bar-chart-2" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title">Analytics Dashboard</h5>
+                    <p class="card-text">
+                        Comprehensive analytics with conversation metrics, intent distribution, and performance insights.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i data-feather="layers" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title">Multi-Intent Support</h5>
+                    <p class="card-text">
+                        Detect and handle multiple customer intents within a single message for complex queries.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i data-feather="clock" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title">24/7 Availability</h5>
+                    <p class="card-text">
+                        Always-on customer support with consistent, intelligent responses at any time of day.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i data-feather="shield" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title">Secure & Reliable</h5>
+                    <p class="card-text">
+                        Enterprise-grade security with reliable performance and data protection for all conversations.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="trending-up" class="me-2"></i>
+                        Live System Stats
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <h3 class="text-primary mb-1" id="total-chats">0</h3>
+                            <p class="mb-0">Total Conversations</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <h3 class="text-success mb-1" id="avg-response">0ms</h3>
+                            <p class="mb-0">Avg Response Time</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <h3 class="text-info mb-1" id="active-users">0</h3>
+                            <p class="mb-0">Active Users</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <h3 class="text-warning mb-1" id="system-uptime">99.9%</h3>
+                            <p class="mb-0">System Uptime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Load and display live statistics
+async function loadStats() {
+    try {
+        const response = await fetch('/api/stats');
+        const stats = await response.json();
+        
+        document.getElementById('total-chats').textContent = stats.total_chats || 0;
+        document.getElementById('avg-response').textContent = `${stats.avg_response_time || 0}ms`;
+        document.getElementById('active-users').textContent = stats.active_users || 0;
+        document.getElementById('system-uptime').textContent = `${stats.system_uptime || 99.9}%`;
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// Load stats on page load
+document.addEventListener('DOMContentLoaded', loadStats);
+
+// Refresh stats every 30 seconds
+setInterval(loadStats, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}ConvoSense - DTC Visualizations{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .plot-container {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .plot-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.25rem;
+        }
+        .plot-container h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0d6efd;
+            margin-bottom: 0.75rem;
+        }
+        .loading {
+            text-align: center;
+            font-size: 1.25rem;
+            color: #495057;
+            margin: 2rem 0;
+        }
+        .error {
+            color: #dc3545;
+            text-align: center;
+            font-size: 1rem;
+            margin: 2rem 0;
+        }
+        .table-container {
+            margin-top: 1rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Decision Tree Classifier (DTC) Visualizations</h2>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">DTC Performance Metrics</h5>
+        </div>
+        <div class="card-body">
+            <div id="loading" class="loading">Loading visualizations...</div>
+            <div id="error" class="error d-none"></div>
+            <div id="plots" class="row"></div>
+            <div id="tables" class="table-container"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        async function loadDTCVisualizations() {
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const plotsContainer = document.getElementById('plots');
+            const tablesContainer = document.getElementById('tables');
+
+            try {
+                const response = await fetch('/api/dtc');
+                const data = await response.json();
+
+                if (data.error) {
+                    loading.classList.add('d-none');
+                    errorDiv.textContent = data.error + (data.details ? `: ${data.details}` : '');
+                    errorDiv.classList.remove('d-none');
+                    return;
+                }
+
+                loading.classList.add('d-none');
+                plotsContainer.innerHTML = '';
+                tablesContainer.innerHTML = '';
+
+                for (const target of ['intent', 'category']) {
+                    const targetData = data[target];
+                    if (!targetData) continue;
+
+                    // Plots
+                    const plotDiv = document.createElement('div');
+                    plotDiv.className = 'col-md-6 mb-4';
+                    let plotHTML = `<h3>${target.charAt(0).toUpperCase() + target.slice(1)}</h3>`;
+                    if (targetData.confusion_matrix) {
+                        plotHTML += `
+                            <div class="plot-container">
+                                <h4>Confusion Matrix</h4>
+                                <img src="/static/${targetData.confusion_matrix}" alt="Confusion Matrix for ${target}">
+                            </div>
+                        `;
+                    }
+                    if (targetData.roc_curve) {
+                        plotHTML += `
+                            <div class="plot-container">
+                                <h4>ROC Curve</h4>
+                                <img src="/static/${targetData.roc_curve}" alt="ROC Curve for ${target}">
+                            </div>
+                        `;
+                    }
+                    plotDiv.innerHTML = plotHTML;
+                    plotsContainer.appendChild(plotDiv);
+
+                    // Classification Report Table
+                    if (targetData.classification_report) {
+                        const tableDiv = document.createElement('div');
+                        tableDiv.className = 'col-md-6 mb-4';
+                        let tableHTML = `
+                            <h3>${target.charAt(0).toUpperCase() + target.slice(1)} Classification Report</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1-Score</th>
+                                        <th>Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        for (const [cls, metrics] of Object.entries(targetData.classification_report)) {
+                            tableHTML += `
+                                <tr>
+                                    <td>${cls}</td>
+                                    <td>${(metrics.precision || 0).toFixed(3)}</td>
+                                    <td>${(metrics.recall || 0).toFixed(3)}</td>
+                                    <td>${(metrics['f1-score'] || 0).toFixed(3)}</td>
+                                    <td>${metrics.support || 0}</td>
+                                </tr>
+                            `;
+                        }
+                        tableHTML += '</tbody></table>';
+                        tableDiv.innerHTML = tableHTML;
+                        tablesContainer.appendChild(tableDiv);
+                    }
+                }
+
+            } catch (error) {
+                loading.classList.add('d-none');
+                errorDiv.textContent = 'Failed to load visualizations: ' + error.message;
+                errorDiv.classList.remove('d-none');
+            }
+        }
+
+        window.onload = loadDTCVisualizations;
+    </script>
+{% endblock %}

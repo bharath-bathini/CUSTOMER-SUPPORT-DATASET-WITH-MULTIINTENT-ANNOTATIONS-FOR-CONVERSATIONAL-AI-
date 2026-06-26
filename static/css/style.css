@@ -1,0 +1,194 @@
+/* Custom styles for ConvoSense - Light Theme */
+
+/* Chat Messages */
+.message {
+    margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in forwards;
+}
+
+.message.customer {
+    text-align: right;
+}
+
+.message.agent, .message.system {
+    text-align: left;
+}
+
+.message-bubble {
+    display: inline-block;
+    max-width: 70%;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    word-wrap: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.message.customer .message-bubble {
+    background-color: #0d6efd;
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.message.agent .message-bubble {
+    background-color: #6c757d;
+    color: white;
+    border-bottom-left-radius: 0.25rem;
+}
+
+.message.system .message-bubble {
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.message-info {
+    font-size: 0.75rem;
+    color: var(--bs-text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Intent Analysis */
+.intent-item {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.intent-badge {
+    font-size: 0.75rem;
+    margin-right: 0.5rem;
+}
+
+.confidence-bar {
+    height: 0.25rem;
+    background-color: var(--bs-gray-300);
+    border-radius: 0.125rem;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+
+.confidence-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.confidence-high { background-color: var(--bs-success); }
+.confidence-medium { background-color: var(--bs-warning); }
+.confidence-low { background-color: var(--bs-danger); }
+
+/* Conversation List */
+.conversation-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.conversation-item:hover {
+    background-color: #f8f9fa;
+}
+
+.conversation-item.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.conversation-item.active .text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.status-connected { background-color: var(--bs-success); }
+.status-connecting { background-color: var(--bs-warning); }
+.status-disconnected { background-color: var(--bs-danger); }
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.spinner {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-bubble {
+        max-width: 85%;
+    }
+    
+    .conversation-item {
+        padding: 1rem !important;
+    }
+}
+
+/* Light theme adjustments */
+.intent-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.conversation-item:hover {
+    background-color: #f8f9fa;
+}
+
+.confidence-bar {
+    background-color: #e9ecef;
+}
+
+/* Scrollbar styling for webkit browsers */
+#chat-messages::-webkit-scrollbar,
+#agent-chat-messages::-webkit-scrollbar,
+#conversations-list::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+#chat-messages::-webkit-scrollbar-track,
+#agent-chat-messages::-webkit-scrollbar-track,
+#conversations-list::-webkit-scrollbar-track {
+    background: var(--bs-gray-200);
+    border-radius: 0.25rem;
+}
+
+#chat-messages::-webkit-scrollbar-thumb,
+#agent-chat-messages::-webkit-scrollbar-thumb,
+#conversations-list::-webkit-scrollbar-thumb {
+    background: var(--bs-gray-400);
+    border-radius: 0.25rem;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover,
+#agent-chat-messages::-webkit-scrollbar-thumb:hover,
+#conversations-list::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-gray-500);
+}
+
+/* Light theme scrollbar styling */
+#chat-messages::-webkit-scrollbar-track,
+#agent-chat-messages::-webkit-scrollbar-track,
+#conversations-list::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+#chat-messages::-webkit-scrollbar-thumb,
+#agent-chat-messages::-webkit-scrollbar-thumb,
+#conversations-list::-webkit-scrollbar-thumb {
+    background: #ced4da;
+}

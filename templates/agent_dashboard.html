@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Agent Dashboard - ConvoSense{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Conversations List -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i data-feather="list" class="me-2"></i>
+                        Conversations
+                    </h5>
+                    <span id="conversation-count" class="badge bg-primary">{{ conversations|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    <div id="conversations-list" style="max-height: 600px; overflow-y: auto;">
+                        {% for conversation in conversations %}
+                        <div class="conversation-item p-3 border-bottom" 
+                             data-conversation-id="{{ conversation.id }}"
+                             data-customer-name="{{ conversation.customer_name }}"
+                             data-subject="{{ conversation.subject }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ conversation.customer_name }}</h6>
+                                    <p class="mb-1 small text-muted">{{ conversation.subject }}</p>
+                                    <small class="text-muted">
+                                        {{ conversation.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{{ 'success' if conversation.status == 'active' else 'secondary' }}">
+                                    {{ conversation.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Controls -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="user" class="me-2"></i>
+                        Agent Settings
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="agent-name" class="form-label">Agent Name</label>
+                        <input type="text" class="form-control" id="agent-name" value="Support Agent">
+                    </div>
+                    <button id="join-agents" class="btn btn-primary w-100">
+                        <i data-feather="wifi" class="me-2"></i>
+                        Connect as Agent
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i data-feather="message-square" class="me-2"></i>
+                            <span id="current-conversation-title">Select a conversation</span>
+                        </h5>
+                        <div id="conversation-controls" style="display: none;">
+                            <button id="close-conversation" class="btn btn-sm btn-outline-secondary me-2">
+                                <i data-feather="x-circle" class="me-1"></i>
+                                Close
+                            </button>
+                            <button id="reopen-conversation" class="btn btn-sm btn-outline-success" style="display: none;">
+                                <i data-feather="refresh-cw" class="me-1"></i>
+                                Reopen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- No Conversation Selected -->
+                    <div id="no-conversation" class="text-center text-muted py-5">
+                        <i data-feather="message-circle" style="width: 4rem; height: 4rem;" class="mb-3"></i>
+                        <h6>No conversation selected</h6>
+                        <p>Select a conversation from the list to start helping customers</p>
+                    </div>
+
+                    <!-- Chat Interface -->
+                    <div id="agent-chat-interface" style="display: none;">
+                        <!-- Messages Container -->
+                        <div id="agent-chat-messages" class="border rounded p-3 mb-3" 
+                             style="height: 400px; overflow-y: auto;">
+                            <!-- Messages will be loaded here -->
+                        </div>
+
+                        <!-- Intent Analysis Panel -->
+                        <div id="intent-panel" class="border rounded p-3 mb-3" style="display: none;">
+                            <h6 class="mb-2">
+                                <i data-feather="cpu" class="me-2"></i>
+                                AI Intent Analysis
+                            </h6>
+                            <div id="intent-results"></div>
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="input-group">
+                            <input type="text" id="agent-message-input" class="form-control" 
+                                   placeholder="Type your response..." disabled>
+                            <button id="agent-send-button" class="btn btn-primary" type="button" disabled>
+                                <i data-feather="send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/agent.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}ConvoSense - EDA Visualizations{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .plot-container {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .plot-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.25rem;
+        }
+        .plot-container h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0d6efd;
+            margin-bottom: 0.75rem;
+        }
+        .loading {
+            text-align: center;
+            font-size: 1.25rem;
+            color: #495057;
+            margin: 2rem 0;
+        }
+        .error {
+            color: #dc3545;
+            text-align: center;
+            font-size: 1rem;
+            margin: 2rem 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <h2 class="mb-4">Exploratory Data Analysis (EDA)</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Dataset Visualizations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="loading" class="loading">Loading visualizations...</div>
+                        <div id="error" class="error d-none"></div>
+                        <div id="plots" class="row"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        async function loadEDAVisualizations() {
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const plotsContainer = document.getElementById('plots');
+
+            try {
+                const response = await fetch('/api/eda');
+                const data = await response.json();
+
+                if (data.error) {
+                    loading.classList.add('d-none');
+                    errorDiv.textContent = data.error + (data.details ? `: ${data.details}` : '');
+                    errorDiv.classList.remove('d-none');
+                    return;
+                }
+
+                loading.classList.add('d-none');
+                plotsContainer.innerHTML = '';
+
+                const plotTitles = [
+                    'WordCloud (Top 100 Words)',
+                    'Top 20 Most Frequent Words',
+                    'Distribution of Document Lengths',
+                    'Part of Speech (POS) Tag Frequency',
+                    'Top 20 Bigrams',
+                    'Class Distribution: Intent',
+                    'Class Distribution: Category'
+                ];
+
+                data.plots.forEach((plotPath, index) => {
+                    const plotDiv = document.createElement('div');
+                    plotDiv.className = 'col-md-6 col-lg-4 mb-4';
+                    plotDiv.innerHTML = `
+                        <div class="plot-container">
+                            <h3>${plotTitles[index] || 'EDA Plot'}</h3>
+                            <img src="/static/${plotPath}" alt="EDA Plot ${index + 1}">
+                        </div>
+                    `;
+                    plotsContainer.appendChild(plotDiv);
+                });
+
+            } catch (error) {
+                loading.classList.add('d-none');
+                errorDiv.textContent = 'Failed to load visualizations: ' + error.message;
+                errorDiv.classList.remove('d-none');
+            }
+        }
+
+        // Load visualizations on page load
+        window.onload = loadEDAVisualizations;
+    </script>
+{% endblock %}

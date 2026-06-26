@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Results - ConvoSense{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Customer Service Predictions</h2>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="text-center mb-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading predictions...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="alert alert-danger d-none" role="alert">
+        Failed to load predictions. Please try again later.
+    </div>
+
+    <!-- Predictions Table -->
+    <div id="predictions-table" class="table-responsive mb-4 d-none">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr id="table-header"></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    feather.replace();
+
+    // Fetch predictions when the page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/predict')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').classList.add('d-none');
+
+                if (data.error) {
+                    document.getElementById('error-message').textContent = data.error + (data.details ? `: ${data.details}` : '');
+                    document.getElementById('error-message').classList.remove('d-none');
+                    return;
+                }
+
+                const tableHeader = document.getElementById('table-header');
+                const tableBody = document.getElementById('table-body');
+                const predictionsTable = document.getElementById('predictions-table');
+
+                // Create table headers
+                data.columns.forEach(column => {
+                    const th = document.createElement('th');
+                    th.textContent = column.replace('Predicted_', 'Predicted ').replace('_', ' ');
+                    tableHeader.appendChild(th);
+                });
+
+                // Populate table body
+                data.predictions.forEach(row => {
+                    const tr = document.createElement('tr');
+                    data.columns.forEach(column => {
+                        const td = document.createElement('td');
+                        td.textContent = row[column] || '';
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+
+                    // Show the table
+                    predictionsTable.classList.remove('d-none');
+                })
+                .catch(error => {
+                    console.error('Error fetching predictions:', error);
+                    document.getElementById('loading').classList.add('d-none');
+                    document.getElementById('error-message').textContent = 'Failed to load predictions: ' + error.message;
+                    document.getElementById('error-message').classList.remove('d-none');
+                });
+        });
+</script>
+{% endblock %}
